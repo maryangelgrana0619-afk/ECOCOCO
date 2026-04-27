@@ -1,46 +1,77 @@
+// Persistent in-memory storage that survives page navigation
+window.AppStorage = window.AppStorage || {};
+
 // Fallback storage for MIT App Inventor compatibility
 const FallbackStorage = {
-    data: {},
     getItem: function(key) {
-        return this.data[key] || null;
+        return window.AppStorage[key] || null;
     },
     setItem: function(key, value) {
-        this.data[key] = value;
+        window.AppStorage[key] = value;
     },
     removeItem: function(key) {
-        delete this.data[key];
+        delete window.AppStorage[key];
     }
 };
 
 // Safe storage abstraction that works in MIT App Inventor
 const SafeStorage = {
-    storage: (function() {
+    storage: null,
+
+    init: function() {
+        // Try localStorage first
         try {
-            // Test if localStorage is available
-            const test = '__storage_test__';
-            if (typeof localStorage !== 'undefined' && localStorage !== null) {
-                localStorage.setItem(test, test);
-                localStorage.removeItem(test);
-                return localStorage;
+            const test = '__storage_test_' + Date.now();
+            localStorage.setItem(test, 'test');
+            const retrieved = localStorage.getItem(test);
+            localStorage.removeItem(test);
+            
+            // Verify it actually worked
+            if (retrieved === 'test') {
+                this.storage = localStorage;
+                return;
             }
         } catch (e) {
-            // localStorage not available, use fallback
+            // localStorage failed
         }
-        return FallbackStorage;
-    })(),
+
+        // Try sessionStorage as backup
+        try {
+            const test = '__storage_test_' + Date.now();
+            sessionStorage.setItem(test, 'test');
+            const retrieved = sessionStorage.getItem(test);
+            sessionStorage.removeItem(test);
+            
+            if (retrieved === 'test') {
+                this.storage = sessionStorage;
+                return;
+            }
+        } catch (e) {
+            // sessionStorage failed
+        }
+
+        // Fall back to in-memory storage
+        this.storage = FallbackStorage;
+    },
 
     getItem: function(key) {
+        if (!this.storage) this.init();
         return this.storage.getItem(key);
     },
 
     setItem: function(key, value) {
+        if (!this.storage) this.init();
         this.storage.setItem(key, value);
     },
 
     removeItem: function(key) {
+        if (!this.storage) this.init();
         this.storage.removeItem(key);
     }
 };
+
+// Initialize storage immediately
+SafeStorage.init();
 
 function showPopup(title, message) {
   const overlay = document.getElementById('popupOverlay');
