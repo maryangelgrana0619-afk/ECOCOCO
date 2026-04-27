@@ -1,88 +1,65 @@
-// Persistent in-memory storage that survives navigation
-if (!window.AppData) {
-    window.AppData = {
-        users: {},
-        currentUser: null
-    };
-}
-
-// Fallback storage for MIT App Inventor - uses window.AppData
-const FallbackStorage = {
-    getItem: function(key) {
-        if (key === 'ecoDashUsers') {
-            return window.AppData.users && Object.keys(window.AppData.users).length > 0 
-                ? JSON.stringify(window.AppData.users)
-                : null;
-        }
-        if (key === 'currentUser') {
-            return window.AppData.currentUser;
-        }
-        return null;
-    },
-    setItem: function(key, value) {
-        if (key === 'ecoDashUsers') {
-            window.AppData.users = JSON.parse(value);
-        } else if (key === 'currentUser') {
-            window.AppData.currentUser = value;
-        }
-    },
-    removeItem: function(key) {
-        if (key === 'ecoDashUsers') {
-            window.AppData.users = {};
-        } else if (key === 'currentUser') {
-            window.AppData.currentUser = null;
-        }
-    }
-};
-
-// Safe storage abstraction that works in MIT App Inventor
+// MIT App Inventor compatible storage - uses localStorage with fallback
 const SafeStorage = {
     storage: null,
 
     init: function() {
-        // Always prefer window.AppData for MIT App Inventor compatibility
-        this.storage = FallbackStorage;
-        
-        // Try localStorage as secondary option
+        // Try localStorage first (most reliable)
         try {
-            const test = '__storage_test_' + Date.now();
+            const test = '__test_' + Date.now();
             localStorage.setItem(test, 'test');
-            const retrieved = localStorage.getItem(test);
+            const result = localStorage.getItem(test);
             localStorage.removeItem(test);
-            
-            if (retrieved === 'test') {
-                // localStorage works - use it
+            if (result === 'test') {
                 this.storage = localStorage;
+                return;
             }
-        } catch (e) {
-            // localStorage failed, stick with FallbackStorage
-        }
+        } catch (e) {}
+
+        // Try sessionStorage as backup
+        try {
+            const test = '__test_' + Date.now();
+            sessionStorage.setItem(test, 'test');
+            const result = sessionStorage.getItem(test);
+            sessionStorage.removeItem(test);
+            if (result === 'test') {
+                this.storage = sessionStorage;
+                return;
+            }
+        } catch (e) {}
+
+        // Use in-memory storage as last resort
+        this.storage = {
+            data: {},
+            getItem: function(key) { return this.data[key] || null; },
+            setItem: function(key, value) { this.data[key] = value; },
+            removeItem: function(key) { delete this.data[key]; }
+        };
     },
 
     getItem: function(key) {
         if (!this.storage) this.init();
-        const value = this.storage.getItem(key);
-        return value;
+        try {
+            return this.storage.getItem(key);
+        } catch (e) {
+            return null;
+        }
     },
 
     setItem: function(key, value) {
         if (!this.storage) this.init();
-        this.storage.setItem(key, value);
-        // Also always sync to window.AppData as backup
-        if (key === 'ecoDashUsers') {
-            window.AppData.users = JSON.parse(value);
-        } else if (key === 'currentUser') {
-            window.AppData.currentUser = value;
-        }
+        try {
+            this.storage.setItem(key, value);
+        } catch (e) {}
     },
 
     removeItem: function(key) {
         if (!this.storage) this.init();
-        this.storage.removeItem(key);
+        try {
+            this.storage.removeItem(key);
+        } catch (e) {}
     }
 };
 
-// Initialize storage immediately
 SafeStorage.init();
 
 function showPopup(title, message) {
@@ -165,8 +142,17 @@ function handleSignUp() {
 
   try {
     UserManager.signUp(email, password, username, fullName);
-    // Pass the user email as URL parameter to ensure it's available on next page
-    window.location.href = 'home.html?user=' + encodeURIComponent(email);
+    
+    // Verify the account was created
+    const testUser = UserManager.getUserData(email);
+    if (testUser) {
+      // Account created successfully, redirect to home
+      setTimeout(() => {
+        window.location.href = 'home.html';
+      }, 100);
+    } else {
+      showPopup('Sign Up Failed', 'Account could not be saved. Please try again.');
+    }
   } catch (error) {
     showPopup('Sign Up Failed', error.message);
   }
