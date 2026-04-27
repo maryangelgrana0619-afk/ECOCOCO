@@ -1,16 +1,37 @@
-// Persistent in-memory storage that survives page navigation
-window.AppStorage = window.AppStorage || {};
+// Persistent in-memory storage that survives navigation
+if (!window.AppData) {
+    window.AppData = {
+        users: {},
+        currentUser: null
+    };
+}
 
-// Fallback storage for MIT App Inventor compatibility
+// Fallback storage for MIT App Inventor - uses window.AppData
 const FallbackStorage = {
     getItem: function(key) {
-        return window.AppStorage[key] || null;
+        if (key === 'ecoDashUsers') {
+            return window.AppData.users && Object.keys(window.AppData.users).length > 0 
+                ? JSON.stringify(window.AppData.users)
+                : null;
+        }
+        if (key === 'currentUser') {
+            return window.AppData.currentUser;
+        }
+        return null;
     },
     setItem: function(key, value) {
-        window.AppStorage[key] = value;
+        if (key === 'ecoDashUsers') {
+            window.AppData.users = JSON.parse(value);
+        } else if (key === 'currentUser') {
+            window.AppData.currentUser = value;
+        }
     },
     removeItem: function(key) {
-        delete window.AppStorage[key];
+        if (key === 'ecoDashUsers') {
+            window.AppData.users = {};
+        } else if (key === 'currentUser') {
+            window.AppData.currentUser = null;
+        }
     }
 };
 
@@ -19,49 +40,40 @@ const SafeStorage = {
     storage: null,
 
     init: function() {
-        // Try localStorage first
+        // Always prefer window.AppData for MIT App Inventor compatibility
+        this.storage = FallbackStorage;
+        
+        // Try localStorage as secondary option
         try {
             const test = '__storage_test_' + Date.now();
             localStorage.setItem(test, 'test');
             const retrieved = localStorage.getItem(test);
             localStorage.removeItem(test);
             
-            // Verify it actually worked
             if (retrieved === 'test') {
+                // localStorage works - use it
                 this.storage = localStorage;
-                return;
             }
         } catch (e) {
-            // localStorage failed
+            // localStorage failed, stick with FallbackStorage
         }
-
-        // Try sessionStorage as backup
-        try {
-            const test = '__storage_test_' + Date.now();
-            sessionStorage.setItem(test, 'test');
-            const retrieved = sessionStorage.getItem(test);
-            sessionStorage.removeItem(test);
-            
-            if (retrieved === 'test') {
-                this.storage = sessionStorage;
-                return;
-            }
-        } catch (e) {
-            // sessionStorage failed
-        }
-
-        // Fall back to in-memory storage
-        this.storage = FallbackStorage;
     },
 
     getItem: function(key) {
         if (!this.storage) this.init();
-        return this.storage.getItem(key);
+        const value = this.storage.getItem(key);
+        return value;
     },
 
     setItem: function(key, value) {
         if (!this.storage) this.init();
         this.storage.setItem(key, value);
+        // Also always sync to window.AppData as backup
+        if (key === 'ecoDashUsers') {
+            window.AppData.users = JSON.parse(value);
+        } else if (key === 'currentUser') {
+            window.AppData.currentUser = value;
+        }
     },
 
     removeItem: function(key) {
@@ -153,7 +165,8 @@ function handleSignUp() {
 
   try {
     UserManager.signUp(email, password, username, fullName);
-    window.location.href = 'home.html';
+    // Pass the user email as URL parameter to ensure it's available on next page
+    window.location.href = 'home.html?user=' + encodeURIComponent(email);
   } catch (error) {
     showPopup('Sign Up Failed', error.message);
   }
