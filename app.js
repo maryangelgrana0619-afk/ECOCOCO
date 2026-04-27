@@ -1,3 +1,47 @@
+// Fallback storage for MIT App Inventor compatibility
+const FallbackStorage = {
+    data: {},
+    getItem: function(key) {
+        return this.data[key] || null;
+    },
+    setItem: function(key, value) {
+        this.data[key] = value;
+    },
+    removeItem: function(key) {
+        delete this.data[key];
+    }
+};
+
+// Safe storage abstraction that works in MIT App Inventor
+const SafeStorage = {
+    storage: (function() {
+        try {
+            // Test if localStorage is available
+            const test = '__storage_test__';
+            if (typeof localStorage !== 'undefined' && localStorage !== null) {
+                localStorage.setItem(test, test);
+                localStorage.removeItem(test);
+                return localStorage;
+            }
+        } catch (e) {
+            // localStorage not available, use fallback
+        }
+        return FallbackStorage;
+    })(),
+
+    getItem: function(key) {
+        return this.storage.getItem(key);
+    },
+
+    setItem: function(key, value) {
+        this.storage.setItem(key, value);
+    },
+
+    removeItem: function(key) {
+        this.storage.removeItem(key);
+    }
+};
+
 function showPopup(title, message) {
   const overlay = document.getElementById('popupOverlay');
   if (!overlay) return;

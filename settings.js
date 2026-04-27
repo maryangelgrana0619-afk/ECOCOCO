@@ -8,7 +8,7 @@ const SettingsManager = {
     },
 
     getSettings: function() {
-        const saved = localStorage.getItem(this.storageKey);
+        const saved = SafeStorage.getItem(this.storageKey);
         if (saved) {
             try {
                 return Object.assign({}, this.defaultSettings, JSON.parse(saved));
@@ -20,7 +20,7 @@ const SettingsManager = {
     },
 
     saveSettings: function(settings) {
-        localStorage.setItem(this.storageKey, JSON.stringify(settings));
+        SafeStorage.setItem(this.storageKey, JSON.stringify(settings));
     },
 
     init: function() {
