@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hedgehog Eco Dash — Home</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-shell">
+
+  <div id="dashboardScreen" class="screen active">
+
+    <!-- Welcome Banner (shown once per session after login) -->
+    <div id="welcomeBanner" style="
+      display:none; align-items:center; gap:12px;
+      background:linear-gradient(135deg,#00C853,#009624);
+      color:#fff; padding:14px 20px; border-radius:0 0 18px 18px;
+      box-shadow:0 4px 16px rgba(0,200,83,0.3);
+      font-family:'Poppins',sans-serif; position:relative; z-index:10;">
+      <div style="font-size:2rem;">🦔</div>
+      <div>
+        <div style="font-weight:800;font-size:1.05rem;">Welcome, <span id="welcomeName">Eco Friend</span>!</div>
+        <div style="font-size:0.8rem;opacity:0.9;">Welcome to Hedgehog Eco Dash 🌍</div>
+      </div>
+    </div>
+
+    <!-- Page header -->
+    <div class="page-header">
+      <div class="greeting-block">
+        <h2 id="homeUsername">Hello!</h2>
+        <p id="homeDate">Let's sort some waste today 🌍</p>
+      </div>
+      <button class="icon-btn" onclick="window.location.href='settings.html'" title="Settings">⚙️</button>
+    </div>
+
+    <!-- SDG 12 Banner -->
+    <div class="sdg-banner">
+      <div class="sdg-icon">♻️</div>
+      <div class="sdg-text">
+        <div class="sdg-label">UN SDG Goal 12</div>
+        <div class="sdg-title">Responsible Consumption & Production</div>
+      </div>
+    </div>
+
+    <!-- Play Card -->
+    <a class="hero-play" href="gameplay.html">
+      <div class="play-mascot">🦔</div>
+      <div class="play-text">
+        <div class="play-label">Ready to play?</div>
+        <h3>Eco Dash!</h3>
+        <p>Sort items into the right bins</p>
+      </div>
+      <div class="play-arrow">▶</div>
+    </a>
+
+    <!-- Stats row -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon">⭐</div>
+        <div class="stat-value" id="homePoints">0</div>
+        <div class="stat-label">Total Points</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🔥</div>
+        <div class="stat-value" id="homeStreakDays">0</div>
+        <div class="stat-label">Day Streak</div>
+      </div>
+    </div>
+
+    <!-- SDG Fact -->
+    <div class="sdg-fact-card">
+      <div class="fact-icon">🌱</div>
+      <div>
+        <div class="fact-label">SDG 12 Did You Know?</div>
+        <div class="fact-text" id="sdgFact">Loading today's eco fact...</div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="section-label">Explore</div>
+    <div class="quick-actions">
+      <a class="qa-card" href="learn.html">
+        <div class="qa-icon" style="background:#E3F2FD;">📚</div>
+        <div class="qa-title">Learn</div>
+        <div class="qa-sub">Eco education modules</div>
+      </a>
+      <a class="qa-card" href="profile.html">
+        <div class="qa-icon" style="background:#E8F5E9;">👤</div>
+        <div class="qa-title">Profile</div>
+        <div class="qa-sub">Stats & achievements</div>
+      </a>
+    </div>
+
+    <!-- Compost Corner teaser -->
+    <div class="compost-card" onclick="showCompostTip()">
+      <div class="compost-card-top">
+        <div class="cc-left">
+          <div class="cc-label">SDG 12 Feature</div>
+          <div class="cc-title">🌱 Compost Corner</div>
+        </div>
+        <div class="cc-icon">›</div>
+      </div>
+      <div class="compost-card-bottom">
+        <p>Turn your food scraps into garden gold. Tap to learn how!</p>
+      </div>
+    </div>
+
+    <div class="scroll-spacer"></div>
+  </div>
+
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="window.location.href='home.html'">
+      <div class="nav-icon-wrap">🏠</div>
+      <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-item" onclick="window.location.href='gameplay.html'">
+      <div class="nav-icon-wrap">🎮</div>
+      <span class="nav-label">Play</span>
+    </button>
+    <button class="nav-item" onclick="window.location.href='learn.html'">
+      <div class="nav-icon-wrap">📚</div>
+      <span class="nav-label">Learn</span>
+    </button>
+    <button class="nav-item" onclick="window.location.href='profile.html'">
+      <div class="nav-icon-wrap">👤</div>
+      <span class="nav-label">Profile</span>
+    </button>
+  </nav>
+
+  <div id="popupOverlay" class="overlay" onclick="closePopup(event)">
+    <div class="overlay-card">
+      <h3></h3>
+      <p></p>
+      <button class="overlay-close" onclick="closePopup(event)">Close</button>
+    </div>
+  </div>
+
+  <div id="fb" class="feedback-toast"></div>
+</div>
+
+<script src="app.js"></script>
+<script src="settings.js"></script>
+<script src="user.js"></script>
+<script>
+  const SDG_FACTS = [
+    "One-third of all food produced globally is wasted each year — that's 1.3 billion tonnes! Proper sorting helps reduce this.",
+    "Recycling one aluminum can saves enough energy to power a TV for 3 hours. Your sorting makes a real difference!",
+    "The average person generates about 4.4 lbs of trash per day. Knowing where it goes matters for SDG 12.",
+    "Composting food scraps can reduce household waste by up to 30% and enrich the soil naturally.",
+    "Plastic takes up to 500 years to decompose. Recycling and reducing use is key to Responsible Consumption.",
+    "SDG 12 calls for halving global food waste by 2030. Games like this help raise awareness and action!",
+    "Glass can be recycled endlessly without loss of quality or purity — always sort it right!",
+    "If the world's population shifts to sustainable consumption, we can reduce global emissions by up to 70%.",
+  ];
+
+  function showCompostTip() {
+    showPopup('🌱 Compost Corner — SDG 12', 'Composting is one of the most powerful actions you can take for Responsible Consumption (SDG 12)!<br><br><strong>✅ What to compost:</strong><br>• Fruit & vegetable scraps<br>• Coffee grounds & tea bags<br>• Eggshells & nutshells<br>• Paper towels & cardboard<br>• Yard waste & leaves<br><br><strong>❌ What NOT to compost:</strong><br>• Meat, fish & dairy<br>• Oily or greasy foods<br>• Pet waste<br>• Plastics or synthetics<br><br><strong>🌍 Why it matters:</strong><br>Composting reduces methane from landfills by 30%, creates natural fertilizer, and contributes directly to SDG Goal 12 — Responsible Consumption & Production.<br><br>Start small with a countertop bin today!');
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    if (!UserManager.isLoggedIn()) {
+      window.location.href = 'index.html';
+      return;
+    }
+    updateHome();
+
+    const fact = SDG_FACTS[new Date().getDay() % SDG_FACTS.length];
+    document.getElementById('sdgFact').textContent = fact;
+
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const now = new Date();
+    document.getElementById('homeDate').textContent = `${days[now.getDay()]} — let's sort! 🌍`;
+  });
+
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') updateHome();
+  });
+
+  function updateHome() {
+    const user = UserManager.getUser();
+    const profile = UserManager.getProfileSummary();
+    const streak = UserManager.getStreakData();
+    if (!user) return;
+    document.getElementById('homeUsername').textContent = `Hello, ${user.username || 'Eco Friend'}! 👋`;
+    document.getElementById('homeStreakDays').textContent = streak.currentStreak || 0;
+    document.getElementById('homePoints').textContent = (profile.points || 0).toLocaleString();
+
+    // Show welcome banner only once per session
+    if (!sessionStorage.getItem('welcomeShown')) {
+      sessionStorage.setItem('welcomeShown', '1');
+      const banner = document.getElementById('welcomeBanner');
+      if (banner) {
+        banner.style.display = 'flex';
+        banner.querySelector('#welcomeName').textContent = user.username || user.fullName || 'Eco Friend';
+        setTimeout(() => {
+          banner.style.opacity = '0';
+          banner.style.transition = 'opacity 0.6s';
+          setTimeout(() => banner.style.display = 'none', 700);
+        }, 3500);
+      }
+    }
+  }
+</script>
+</body>
+</html>

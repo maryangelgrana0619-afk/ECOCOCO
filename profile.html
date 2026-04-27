@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hedgehog Eco Dash — Profile</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-shell">
+
+  <div id="profileScreen" class="screen active" style="padding-bottom:80px;">
+    <div class="inner-header">
+      <button class="icon-btn" onclick="window.history.back()">←</button>
+      <h2>Profile</h2>
+      <button class="icon-btn" onclick="window.location.href='settings.html'">⚙️</button>
+    </div>
+
+    <!-- Profile Hero -->
+    <div class="profile-hero">
+      <div class="avatar-container">
+        <div class="avatar" id="profileAvatar" onclick="openPicModal()" title="Change profile picture">
+          <span id="avatarEmoji">🦔</span>
+          <img id="avatarImg" src="" alt="" style="display:none;">
+        </div>
+        <button class="avatar-edit-btn" onclick="openPicModal()" title="Change picture">✏️</button>
+      </div>
+      <div class="profile-name" id="profileName">Eco Hedgehog</div>
+      <div class="profile-email" id="profileEmail">eco@example.com</div>
+      <div class="profile-chips">
+        <span class="profile-chip" id="levelChip">Level 1</span>
+        <span class="profile-chip" id="pointsChip">0 pts</span>
+        <span class="profile-chip" id="streakChip">🔥 0 days</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px; padding: 20px 20px 0;">
+
+      <!-- Level Progress -->
+      <div class="card">
+        <div class="card-title">📈 Level Progress</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <span style="font-size:0.84rem;color:var(--text-2);font-weight:600;" id="levelProgressLabel">0 / 250 pts to Level 2</span>
+          <span style="font-size:0.78rem;color:var(--text-muted);" id="levelPct">0%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="levelBar" style="width:0%"></div></div>
+      </div>
+
+      <!-- Stats -->
+      <div class="card">
+        <div class="card-title">📊 Your Stats</div>
+        <div class="stats-grid">
+          <div class="mini-stat"><div class="val" id="statGames">0</div><div class="lbl">Games</div></div>
+          <div class="mini-stat"><div class="val" id="statItems">0</div><div class="lbl">Sorted</div></div>
+          <div class="mini-stat"><div class="val" id="statAccuracy">0%</div><div class="lbl">Accuracy</div></div>
+          <div class="mini-stat"><div class="val" id="statBio">0</div><div class="lbl">🌱 Bio</div></div>
+          <div class="mini-stat"><div class="val" id="statRecycle">0</div><div class="lbl">♻️ Recycled</div></div>
+          <div class="mini-stat"><div class="val" id="statNon">0</div><div class="lbl">🗑️ Non-Bio</div></div>
+        </div>
+      </div>
+
+      <!-- SDG Impact -->
+      <div class="sdg-fact-card" style="margin:0;">
+        <div class="fact-icon">🌍</div>
+        <div>
+          <div class="fact-label">SDG 12 Your Impact</div>
+          <div class="fact-text" id="sdgImpact">Start playing to calculate your sustainability impact!</div>
+        </div>
+      </div>
+
+      <!-- Streak -->
+      <div class="card">
+        <div class="card-title">🔥 Streak</div>
+        <div class="streak-display">
+          <div class="streak-flame">🔥</div>
+          <div>
+            <div class="streak-count" id="currentStreak">0</div>
+            <div class="streak-label">day streak</div>
+          </div>
+          <div style="margin-left:auto;text-align:right;">
+            <div style="font-size:0.8rem;color:var(--text-muted);">Longest</div>
+            <div style="font-family:var(--font-head);font-weight:800;font-size:1.2rem;color:var(--text);" id="longestStreak">0</div>
+          </div>
+        </div>
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-top:12px;text-align:center;">Play daily to keep your streak going!</p>
+      </div>
+
+      <!-- Achievements -->
+      <div class="card">
+        <div class="card-title">🏆 Achievements</div>
+        <div class="achievement-list">
+          <div class="achievement-item" id="sortingStarItem">
+            <div class="ach-icon">⭐</div>
+            <div class="ach-info">
+              <div class="ach-title">Sorting Star</div>
+              <div class="ach-sub" id="sortingStarSub">Sort 100 items correctly</div>
+            </div>
+            <div class="ach-badge" id="sortingStarBadge"></div>
+          </div>
+          <div class="achievement-item" id="recycleMasterItem">
+            <div class="ach-icon">📘</div>
+            <div class="ach-info">
+              <div class="ach-title">Recycle Master</div>
+              <div class="ach-sub" id="recycleMasterSub">Sort 50 recyclable items</div>
+            </div>
+            <div class="ach-badge" id="recycleMasterBadge"></div>
+          </div>
+          <div class="achievement-item" id="compostChampItem">
+            <div class="ach-icon">🌱</div>
+            <div class="ach-info">
+              <div class="ach-title">Compost Champion</div>
+              <div class="ach-sub" id="compostChampSub">Sort 30 bio items</div>
+            </div>
+            <div class="ach-badge" id="compostChampBadge"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compost Corner -->
+      <div class="compost-card" style="margin:0;" onclick="showCompostCorner()">
+        <div class="compost-card-top">
+          <div class="cc-left">
+            <div class="cc-label">SDG 12 Feature</div>
+            <div class="cc-title">🌱 Compost Corner</div>
+          </div>
+          <div class="cc-icon">›</div>
+        </div>
+        <div class="compost-card-bottom">
+          <p>Learn composting tips based on your gameplay progress.</p>
+        </div>
+      </div>
+
+      <!-- Profile Actions -->
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="openEditProfile()">✏️ Edit Profile</button>
+        <button class="btn-secondary btn-danger" onclick="signOut()">Sign Out</button>
+      </div>
+
+      <button class="btn-primary" style="width:100%;padding:16px;" onclick="window.location.href='gameplay.html'">🎮 Play Eco Dash!</button>
+
+      <div style="height:12px;"></div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-item" onclick="window.location.href='home.html'">
+      <div class="nav-icon-wrap">🏠</div>
+      <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-item" onclick="window.location.href='gameplay.html'">
+      <div class="nav-icon-wrap">🎮</div>
+      <span class="nav-label">Play</span>
+    </button>
+    <button class="nav-item" onclick="window.location.href='learn.html'">
+      <div class="nav-icon-wrap">📚</div>
+      <span class="nav-label">Learn</span>
+    </button>
+    <button class="nav-item active" onclick="window.location.href='profile.html'">
+      <div class="nav-icon-wrap">👤</div>
+      <span class="nav-label">Profile</span>
+    </button>
+  </nav>
+
+  <!-- Generic popup overlay -->
+  <div id="popupOverlay" class="overlay" onclick="closePopup(event)">
+    <div class="overlay-card"><h3></h3><p></p>
+      <button class="overlay-close" onclick="closePopup(event)">Close</button>
+    </div>
+  </div>
+
+  <!-- Profile Picture Modal -->
+  <div id="picModal" class="overlay" onclick="closePicModal(event)">
+    <div class="overlay-card" style="max-width:420px;" onclick="event.stopPropagation()">
+      <h3>📸 Profile Picture</h3>
+
+      <!-- Preview -->
+      <div class="pic-preview" id="picPreview">
+        <span id="previewEmoji">🦔</span>
+        <img id="previewImg" src="" alt="" style="display:none;">
+      </div>
+
+      <div class="pic-modal-body" style="margin-top:18px;">
+        <!-- Tab buttons -->
+        <div class="pic-options">
+          <button class="pic-option-btn active" id="tabEmoji" onclick="switchPicTab('emoji')">😊 Choose Emoji</button>
+          <button class="pic-option-btn" id="tabUpload" onclick="switchPicTab('upload')">📷 Upload Photo</button>
+        </div>
+
+        <!-- Emoji grid -->
+        <div id="emojiSection">
+          <div class="emoji-grid" id="emojiGrid"></div>
+        </div>
+
+        <!-- Upload section -->
+        <div id="uploadSection" style="display:none;text-align:center;">
+          <input type="file" id="photoInput" accept="image/*" style="display:none;" onchange="handlePhotoUpload(this)">
+          <button class="btn-secondary" style="width:100%;padding:14px;" onclick="document.getElementById('photoInput').click()">
+            📂 Browse for Photo
+          </button>
+          <p style="font-size:0.78rem;color:var(--text-muted);margin-top:10px;">Supported: JPG, PNG, GIF, WebP</p>
+          <button id="removePhotoBtn" class="btn-secondary btn-danger" style="width:100%;padding:12px;margin-top:8px;display:none;" onclick="removePhoto()">
+            🗑️ Remove Current Photo
+          </button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:8px;">
+        <button class="overlay-close" style="flex:1;" onclick="closePicModalBtn()">Cancel</button>
+        <button class="btn-primary" style="flex:1;" onclick="savePicture()">Save Picture</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div id="editProfileModal" class="overlay" onclick="closeEditProfile(event)">
+    <div class="overlay-card" style="max-width:420px;" onclick="event.stopPropagation()">
+      <h3>✏️ Edit Profile</h3>
+      <div class="edit-field">
+        <label>Full Name</label>
+        <input type="text" id="editFullName" placeholder="Your full name">
+      </div>
+      <div class="edit-field">
+        <label>Username</label>
+        <input type="text" id="editUsername" placeholder="Your username">
+      </div>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:16px;margin-top:-8px;">Username may only contain letters, numbers, and underscores.</p>
+      <div style="display:flex;gap:10px;margin-top:4px;">
+        <button class="overlay-close" style="flex:1;" onclick="document.getElementById('editProfileModal').classList.remove('active')">Cancel</button>
+        <button class="btn-primary" style="flex:1;" onclick="saveEditProfile()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="fb" class="feedback-toast"></div>
+</div>
+
+<script src="app.js"></script>
+<script src="settings.js"></script>
+<script src="user.js"></script>
+<script>
+const EMOJI_AVATARS = [
+  '🦔','🐢','🐸','🦊','🐺','🦁','🐯','🐻','🐼','🐨','🦄','🐙',
+  '🦋','🐝','🦜','🐧','🦅','🦩','🌱','🌿','🍀','🌲','🌵','🌸',
+  '🌍','♻️','💚','🌊','⭐','🔥','🏆','🎮'
+];
+
+let selectedEmoji = '🦔';
+let selectedPhotoData = null;
+let currentPicTab = 'emoji';
+
+document.addEventListener('DOMContentLoaded', function() {
+  if (!UserManager.isLoggedIn()) {
+    window.location.href = 'index.html';
+    return;
+  }
+  buildEmojiGrid();
+  updateProfile();
+});
+
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'visible') updateProfile();
+});
+
+function buildEmojiGrid() {
+  const grid = document.getElementById('emojiGrid');
+  grid.innerHTML = '';
+  EMOJI_AVATARS.forEach(em => {
+    const btn = document.createElement('button');
+    btn.className = 'emoji-avatar-btn';
+    btn.textContent = em;
+    btn.onclick = () => selectEmoji(em, btn);
+    grid.appendChild(btn);
+  });
+}
+
+function selectEmoji(em, btn) {
+  selectedEmoji = em;
+  selectedPhotoData = null;
+  document.querySelectorAll('.emoji-avatar-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('previewEmoji').textContent = em;
+  document.getElementById('previewEmoji').style.display = '';
+  document.getElementById('previewImg').style.display = 'none';
+}
+
+function switchPicTab(tab) {
+  currentPicTab = tab;
+  document.getElementById('tabEmoji').classList.toggle('active', tab === 'emoji');
+  document.getElementById('tabUpload').classList.toggle('active', tab === 'upload');
+  document.getElementById('emojiSection').style.display = tab === 'emoji' ? '' : 'none';
+  document.getElementById('uploadSection').style.display = tab === 'upload' ? '' : 'none';
+}
+
+function handlePhotoUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 4 * 1024 * 1024) {
+    showToast('Image too large (max 4 MB)', '#F44336');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    selectedPhotoData = e.target.result;
+    selectedEmoji = null;
+    document.getElementById('previewImg').src = selectedPhotoData;
+    document.getElementById('previewImg').style.display = 'block';
+    document.getElementById('previewEmoji').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removePhoto() {
+  selectedPhotoData = null;
+  selectedEmoji = '🦔';
+  document.getElementById('previewEmoji').textContent = '🦔';
+  document.getElementById('previewEmoji').style.display = '';
+  document.getElementById('previewImg').style.display = 'none';
+  document.getElementById('photoInput').value = '';
+}
+
+function openPicModal() {
+  const user = UserManager.getUser();
+  // Initialise preview from current saved data
+  if (user && user.profilePicture) {
+    if (user.profilePicture.startsWith('data:')) {
+      selectedPhotoData = user.profilePicture;
+      selectedEmoji = null;
+      document.getElementById('previewImg').src = selectedPhotoData;
+      document.getElementById('previewImg').style.display = 'block';
+      document.getElementById('previewEmoji').style.display = 'none';
+      document.getElementById('removePhotoBtn').style.display = '';
+    } else {
+      selectedEmoji = user.profilePicture;
+      selectedPhotoData = null;
+      document.getElementById('previewEmoji').textContent = selectedEmoji;
+      document.getElementById('previewEmoji').style.display = '';
+      document.getElementById('previewImg').style.display = 'none';
+      document.getElementById('removePhotoBtn').style.display = 'none';
+    }
+  } else {
+    selectedEmoji = '🦔';
+    selectedPhotoData = null;
+    document.getElementById('previewEmoji').textContent = '🦔';
+    document.getElementById('previewEmoji').style.display = '';
+    document.getElementById('previewImg').style.display = 'none';
+    document.getElementById('removePhotoBtn').style.display = 'none';
+  }
+  switchPicTab('emoji');
+  document.getElementById('picModal').classList.add('active');
+}
+
+function closePicModal(event) {
+  if (event.target === document.getElementById('picModal')) {
+    document.getElementById('picModal').classList.remove('active');
+  }
+}
+
+function closePicModalBtn() {
+  document.getElementById('picModal').classList.remove('active');
+}
+
+function savePicture() {
+  const picData = selectedPhotoData || selectedEmoji || '🦔';
+  UserManager.updateProfile({ profilePicture: picData });
+  renderAvatar(picData);
+  document.getElementById('picModal').classList.remove('active');
+  showToast('✅ Picture updated!', '#00C853');
+}
+
+function renderAvatar(picData) {
+  const emoji = document.getElementById('avatarEmoji');
+  const img = document.getElementById('avatarImg');
+  if (!picData || !picData.startsWith('data:')) {
+    emoji.textContent = picData || '🦔';
+    emoji.style.display = '';
+    img.style.display = 'none';
+  } else {
+    img.src = picData;
+    img.style.display = 'block';
+    emoji.style.display = 'none';
+  }
+}
+
+function openEditProfile() {
+  const user = UserManager.getUser();
+  if (!user) return;
+  document.getElementById('editFullName').value = user.fullName || '';
+  document.getElementById('editUsername').value = user.username || '';
+  document.getElementById('editProfileModal').classList.add('active');
+}
+
+function closeEditProfile(event) {
+  if (event.target === document.getElementById('editProfileModal')) {
+    document.getElementById('editProfileModal').classList.remove('active');
+  }
+}
+
+function saveEditProfile() {
+  const fullName = document.getElementById('editFullName').value.trim();
+  const username = document.getElementById('editUsername').value.trim();
+
+  if (!fullName || !username) {
+    showToast('Name and username are required.', '#F44336');
+    return;
+  }
+  if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+    showToast('Username: letters, numbers, underscores only.', '#F44336');
+    return;
+  }
+  try {
+    UserManager.updateProfile({ fullName, username });
+    updateProfile();
+    document.getElementById('editProfileModal').classList.remove('active');
+    showToast('✅ Profile updated!', '#00C853');
+  } catch(e) {
+    showToast('Error: ' + e.message, '#F44336');
+  }
+}
+
+function showToast(msg, color) {
+  const fb = document.getElementById('fb');
+  fb.textContent = msg;
+  fb.style.background = color;
+  fb.classList.add('show');
+  setTimeout(() => fb.classList.remove('show'), 1800);
+}
+
+function updateProfile() {
+  const user = UserManager.getUser();
+  if (!user) return;
+
+  const profile = UserManager.getProfileSummary();
+  const achievements = UserManager.getAchievements();
+  const streak = UserManager.getStreakData();
+  const levelProg = UserManager.getLevelProgress();
+
+  // Avatar
+  renderAvatar(user.profilePicture || '🦔');
+
+  // Hero section
+  document.getElementById('profileName').textContent = user.fullName || user.username || 'Eco Hedgehog';
+  document.getElementById('profileEmail').textContent = user.email || '';
+  document.getElementById('levelChip').textContent = `Level ${profile.level}`;
+  document.getElementById('pointsChip').textContent = `${profile.points.toLocaleString()} pts`;
+  document.getElementById('streakChip').textContent = `🔥 ${streak.currentStreak} days`;
+
+  // Level progress
+  document.getElementById('levelProgressLabel').textContent =
+    `${levelProg.pointsInLevel} / ${levelProg.pointsForLevel} pts to Level ${profile.level + 1}`;
+  document.getElementById('levelPct').textContent = levelProg.progressPercent + '%';
+  document.getElementById('levelBar').style.width = levelProg.progressPercent + '%';
+
+  // Stats
+  document.getElementById('statGames').textContent = profile.gamesPlayed;
+  document.getElementById('statItems').textContent = profile.totalItemsSorted;
+  document.getElementById('statAccuracy').textContent = profile.accuracy + '%';
+  document.getElementById('statBio').textContent = user.bioItemsSorted || 0;
+  document.getElementById('statRecycle').textContent = user.recyclableItemsSorted || 0;
+  document.getElementById('statNon').textContent = user.nonRecyclableItemsSorted || 0;
+
+  // SDG Impact
+  const sorted = profile.totalItemsSorted;
+  const impact = sorted >= 100
+    ? `You've sorted ${sorted} items — that's like diverting ${Math.round(sorted * 0.12)} kg of waste from landfill! 🌍`
+    : `You've sorted ${sorted} item${sorted !== 1 ? 's' : ''} so far. Keep going — every item counts for SDG 12!`;
+  document.getElementById('sdgImpact').textContent = impact;
+
+  // Streak
+  document.getElementById('currentStreak').textContent = streak.currentStreak;
+  document.getElementById('longestStreak').textContent = streak.longestStreak;
+
+  // Achievements
+  updateAchievement('sortingStar', achievements.sortingStar, `${achievements.sortingStar.progress} / 100 sorted`);
+  updateAchievement('recycleMaster', achievements.recycleMaster, `${achievements.recycleMaster.progress} / 50 recyclables`);
+
+  const bioCount = user.bioItemsSorted || 0;
+  const compostUnlocked = bioCount >= 30;
+  updateAchievement('compostChamp', { unlocked: compostUnlocked, progress: bioCount }, `${bioCount} / 30 bio items`);
+}
+
+function updateAchievement(key, data, subText) {
+  const item = document.getElementById(key + 'Item');
+  const sub = document.getElementById(key + 'Sub');
+  const badge = document.getElementById(key + 'Badge');
+  if (!item) return;
+  item.classList.toggle('unlocked', data.unlocked);
+  sub.textContent = data.unlocked ? '✅ Achievement Unlocked!' : subText;
+  badge.textContent = data.unlocked ? '🏆' : '';
+}
+
+function signOut() {
+  if (confirm('Are you sure you want to sign out?')) {
+    UserManager.signOut();
+    window.location.href = 'index.html';
+  }
+}
+
+function showCompostCorner() {
+  const user = UserManager.getUser();
+  const bio = user ? (user.bioItemsSorted || 0) : 0;
+  showPopup('🌱 Compost Corner — SDG 12',
+    `<strong>Your Composting Journey</strong><br><br>You've sorted <strong>${bio} bio items</strong> so far — great start!<br><br>
+<strong>What You Can Compost:</strong><br>
+• Fruit & vegetable scraps<br>
+• Coffee grounds & tea bags<br>
+• Eggshells & paper towels<br>
+• Yard waste & leaves<br><br>
+<strong>Your Next Steps:</strong><br>
+• Start a small countertop compost bin<br>
+• Collect scraps for 1 week<br>
+• Add brown materials (cardboard, leaves)<br>
+• Turn the pile weekly<br>
+• Harvest rich compost in 2–3 months!<br><br>
+<strong>SDG 12 Impact:</strong><br>
+✓ Reduces landfill waste by 30%<br>
+✓ Creates natural fertilizer<br>
+✓ Cuts methane emissions<br>
+✓ Improves soil health & biodiversity<br><br>
+<em>Every scrap you compost is a vote for a sustainable future! 🌍</em>`
+  );
+}
+</script>
+</body>
+</html>

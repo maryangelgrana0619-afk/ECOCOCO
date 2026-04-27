@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hedgehog Eco Dash — Welcome</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-shell">
+  <div id="authScreen" class="screen active auth-screen">
+
+    <div class="auth-hero">
+      <div class="auth-logo">🦔</div>
+      <h1>Hedgehog Eco Dash</h1>
+      <p>Sort waste, earn points, and help save the planet — one item at a time!</p>
+      <div class="sdg-badge">🌿 SDG 12 — Responsible Consumption</div>
+    </div>
+
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabSignIn" onclick="switchTab('signin')">Sign In</button>
+        <button class="auth-tab" id="tabSignUp" onclick="switchTab('signup')">Create Account</button>
+      </div>
+
+      <!-- Sign In Form -->
+      <div id="signInForm" class="auth-form active">
+        <div class="input-group">
+          <span class="input-icon">📧</span>
+          <input type="email" placeholder="Email address" id="signInEmail" autocomplete="email">
+        </div>
+        <div class="input-group">
+          <span class="input-icon">🔒</span>
+          <input type="password" placeholder="Password" id="signInPassword" autocomplete="current-password">
+          <button type="button" class="eye-btn" onclick="togglePassword('signInPassword', this)">👁️</button>
+        </div>
+        <button class="btn-primary" onclick="handleSignIn()">Sign In →</button>
+        <p class="auth-switch">Don't have an account? <a href="#" onclick="switchTab('signup'); return false;">Create one here</a></p>
+      </div>
+
+      <!-- Sign Up Form -->
+      <div id="signUpForm" class="auth-form">
+        <div class="input-group">
+          <span class="input-icon">👤</span>
+          <input type="text" placeholder="Full Name" id="signUpFullName" autocomplete="name">
+        </div>
+        <div class="input-group">
+          <span class="input-icon">📧</span>
+          <input type="email" placeholder="Email address" id="signUpEmail" autocomplete="email">
+        </div>
+        <div class="input-group">
+          <span class="input-icon">🏷️</span>
+          <input type="text" placeholder="Username" id="signUpUsername" autocomplete="username">
+        </div>
+        <div class="input-group">
+          <span class="input-icon">🔒</span>
+          <input type="password" placeholder="Password (min 6 chars)" id="signUpPassword" autocomplete="new-password">
+          <button type="button" class="eye-btn" onclick="togglePassword('signUpPassword', this)">👁️</button>
+        </div>
+        <div class="input-group">
+          <span class="input-icon">🔒</span>
+          <input type="password" placeholder="Confirm Password" id="signUpConfirmPassword" autocomplete="new-password">
+          <button type="button" class="eye-btn" onclick="togglePassword('signUpConfirmPassword', this)">👁️</button>
+        </div>
+        <button class="btn-primary" onclick="handleSignUp()">Create Account →</button>
+        <p class="auth-switch">Already have an account? <a href="#" onclick="switchTab('signin'); return false;">Sign in here</a></p>
+      </div>
+    </div>
+  </div>
+
+  <div id="popupOverlay" class="overlay" onclick="closePopup(event)">
+    <div class="overlay-card">
+      <h3></h3>
+      <p></p>
+      <button class="overlay-close" onclick="closePopup(event)">Close</button>
+    </div>
+  </div>
+
+  <div id="fb" class="feedback-toast"></div>
+</div>
+
+<script src="app.js"></script>
+<script src="settings.js"></script>
+<script src="user.js"></script>
+<script>
+  // Redirect if already logged in
+  document.addEventListener('DOMContentLoaded', function() {
+    if (UserManager.isLoggedIn()) {
+      window.location.href = 'home.html';
+    }
+  });
+
+  function switchTab(tab) {
+    const isSignIn = tab === 'signin';
+    document.getElementById('tabSignIn').classList.toggle('active', isSignIn);
+    document.getElementById('tabSignUp').classList.toggle('active', !isSignIn);
+    document.getElementById('signInForm').classList.toggle('active', isSignIn);
+    document.getElementById('signUpForm').classList.toggle('active', !isSignIn);
+  }
+
+  function togglePassword(fieldId, btn) {
+    const input = document.getElementById(fieldId);
+    input.type = input.type === 'password' ? 'text' : 'password';
+    btn.textContent = input.type === 'password' ? '👁️' : '👁️‍🗨️';
+  }
+
+  function handleSignIn() {
+    const email = document.getElementById('signInEmail').value.trim();
+    const password = document.getElementById('signInPassword').value.trim();
+    if (!email || !password) {
+      showPopup('Missing Info', 'Please enter your email and password to sign in.');
+      return;
+    }
+    try {
+      UserManager.signIn(email, password);
+      window.location.href = 'home.html';
+    } catch (error) {
+      showPopup('Sign In Failed', error.message);
+    }
+  }
+
+  function handleSignUp() {
+    const fullName  = document.getElementById('signUpFullName').value.trim();
+    const email     = document.getElementById('signUpEmail').value.trim();
+    const username  = document.getElementById('signUpUsername').value.trim();
+    const password  = document.getElementById('signUpPassword').value.trim();
+    const confirm   = document.getElementById('signUpConfirmPassword').value.trim();
+
+    if (!fullName || !email || !username || !password || !confirm) {
+      showPopup('Missing Fields', 'Please fill in all fields to create your account.');
+      return;
+    }
+    if (password !== confirm) {
+      showPopup('Password Mismatch', 'Passwords do not match. Please try again.');
+      return;
+    }
+    if (password.length < 6) {
+      showPopup('Password Too Short', 'Password must be at least 6 characters long.');
+      return;
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+      showPopup('Invalid Username', 'Username can only contain letters, numbers, and underscores.');
+      return;
+    }
+    try {
+      UserManager.signUp(email, password, username, fullName);
+      window.location.href = 'home.html';
+    } catch (error) {
+      showPopup('Sign Up Failed', error.message);
+    }
+  }
+</script>
+</body>
+</html>

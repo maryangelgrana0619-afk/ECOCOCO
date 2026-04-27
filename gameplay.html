@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hedgehog Eco Dash — Play</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Styles unique to gameplay that aren't in style.css */
+    #gameScreen { position: relative; }
+    /* Hint button active state */
+    #hintBtn:hover:not(:disabled) { background: #D1C4E9; transform: translateY(-1px); }
+    #hintBtn:disabled { cursor: not-allowed; }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+
+  <div id="gameScreen" class="screen active" style="flex-direction:column;">
+
+    <!-- Game Header -->
+    <div class="game-header">
+      <button class="icon-btn" onclick="confirmBack()" title="Back" style="flex-shrink:0;">←</button>
+      <div class="game-stat-pill">
+        <span class="pill-icon">⭐</span>
+        <span id="score">0</span>
+      </div>
+      <div class="game-stat-pill game-timer-pill" id="timerPill">
+        <span class="pill-icon">⏱</span>
+        <span id="timer">30</span>s
+      </div>
+      <div class="lives-display" id="livesDisplay">
+        <span class="life-icon" id="life1">❤️</span>
+        <span class="life-icon" id="life2">❤️</span>
+        <span class="life-icon" id="life3">❤️</span>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="game-btn" id="pauseBtn" onclick="togglePause()">⏸ Pause</button>
+        <button class="game-btn" id="soundBtn" onclick="toggleSound()">🔊</button>
+      </div>
+    </div>
+
+    <!-- Timer progress track -->
+    <div class="progress-track">
+      <div class="progress-track-fill" id="timerTrack" style="width:100%"></div>
+    </div>
+
+    <!-- Combo bar -->
+    <div class="combo-bar">
+      <span class="combo-dot" id="cd1"></span>
+      <span class="combo-dot" id="cd2"></span>
+      <span class="combo-dot" id="cd3"></span>
+      <span class="combo-dot" id="cd4"></span>
+      <span class="combo-dot" id="cd5"></span>
+      <span class="combo-label" id="comboLabel">Combo</span>
+    </div>
+
+    <!-- Game Area -->
+    <div class="game-area" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding-bottom:8px;">
+      <div class="mascot-wrap">
+        <div class="mascot-emoji" id="mascotEmoji">🦔</div>
+      </div>
+      <div class="item-card" id="itemCard">
+        <span class="item-hint" id="itemCount">#1</span>
+        <span class="item-emoji" id="displayEmoji">🍎</span>
+        <div class="item-name" id="displayName">Apple Core</div>
+        <div class="item-category-hint" id="categoryHint">Think about it...</div>
+      </div>
+      <button id="hintBtn" onclick="showHint()" style="
+        padding:9px 26px; border-radius:999px; border:2px solid #7C4DFF;
+        background:#EDE7F6; color:#7C4DFF; font-weight:800; font-size:0.84rem;
+        cursor:pointer; font-family:'Poppins',sans-serif; letter-spacing:0.02em;
+        transition:all 0.2s; box-shadow:0 2px 8px rgba(124,77,255,0.15);">💡 Hint</button>
+    </div>
+
+    <!-- Power-up floats over gameScreen (position:absolute on #gameScreen which is position:relative) -->
+    <button class="power-up-btn" id="powerUpBtn" onclick="usePowerUp()" title="Skip Item">⚡</button>
+
+    <!-- SDG tip bar -->
+    <div class="sdg-tip-bar" id="sdgTipBar">🌿 SDG 12: Responsible Consumption — sort wisely!</div>
+
+    <!-- Bins -->
+    <div class="bins" style="padding:0 16px 16px;margin:0 auto;width:100%;max-width:520px;">
+      <div class="bin bin-bio" onclick="check('BIO')">
+        <span class="bin-icon">🌱</span>
+        <span class="bin-label">Bio</span>
+      </div>
+      <div class="bin bin-recycle" onclick="check('RECYCLE')">
+        <span class="bin-icon">♻️</span>
+        <span class="bin-label">Recycle</span>
+      </div>
+      <div class="bin bin-non" onclick="check('NON')">
+        <span class="bin-icon">🗑️</span>
+        <span class="bin-label">Non-Bio</span>
+      </div>
+    </div>
+
+    <!-- Pause overlay -->
+    <div id="pauseOverlay" class="pause-overlay">
+      <div class="pause-card">
+        <div style="font-size:2.5rem;margin-bottom:12px;">⏸</div>
+        <h3>Game Paused</h3>
+        <p>Take a breath, eco warrior! 🌍</p>
+        <button class="btn-primary" onclick="togglePause()">▶ Resume</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Over Popup -->
+  <div id="popupOverlay" class="overlay" onclick="closePopup(event)">
+    <div class="overlay-card" id="overlayCard">
+      <h3></h3>
+      <p></p>
+      <button class="overlay-close" onclick="closePopup(event)">Close</button>
+    </div>
+  </div>
+
+  <div id="fb" class="feedback-toast"></div>
+</div>
+
+<script src="app.js"></script>
+<script src="settings.js"></script>
+<script src="user.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  if (!UserManager.isLoggedIn()) {
+    window.location.href = 'index.html';
+    return;
+  }
+  startGame();
+});
+
+// ── MASSIVE ITEM POOL ──────────────────────────────────────────────────────
+const ALL_ITEMS = [
+  // ── BIO ──────────────────────────────────────────────────────────────────
+  { name:"Apple Core",         type:"BIO", emoji:"🍎"},
+  { name:"Banana Peel",        type:"BIO", emoji:"🍌"},
+  { name:"Orange Peel",        type:"BIO", emoji:"🍊"},
+  { name:"Mango Skin",         type:"BIO", emoji:"🥭"},
+  { name:"Pineapple Core",     type:"BIO", emoji:"🍍"},
+  { name:"Strawberry Tops",    type:"BIO", emoji:"🍓"},
+  { name:"Blueberry Stems",    type:"BIO", emoji:"🌿"},
+  { name:"Watermelon Rind",    type:"BIO", emoji:"🍉"},
+  { name:"Grape Stems",        type:"BIO", emoji:"🍇"},
+  { name:"Peach Pit",          type:"BIO", emoji:"🍑"},
+  { name:"Cherry Pits",        type:"BIO", emoji:"🍒"},
+  { name:"Lemon Peel",         type:"BIO", emoji:"🍋"},
+  { name:"Avocado Skin",       type:"BIO", emoji:"🥑"},
+  { name:"Kiwi Skin",          type:"BIO", emoji:"🥝"},
+  { name:"Carrot Tops",        type:"BIO", emoji:"🥕"},
+  { name:"Lettuce Leaves",     type:"BIO", emoji:"🥬"},
+  { name:"Spinach Stems",      type:"BIO", emoji:"🥬"},
+  { name:"Potato Peels",       type:"BIO", emoji:"🥔"},
+  { name:"Sweet Potato Skin",  type:"BIO", emoji:"🍠"},
+  { name:"Onion Skins",        type:"BIO", emoji:"🧅"},
+  { name:"Garlic Skin",        type:"BIO", emoji:"🧄"},
+  { name:"Broccoli Stem",      type:"BIO", emoji:"🥦"},
+  { name:"Cauliflower Leaves", type:"BIO", emoji:"🥦"},
+  { name:"Celery Trimmings",   type:"BIO", emoji:"🥗"},
+  { name:"Cucumber Ends",      type:"BIO", emoji:"🥒"},
+  { name:"Bell Pepper Seeds",  type:"BIO", emoji:"🌱"},
+  { name:"Corn Cob",           type:"BIO", emoji:"🌽"},
+  { name:"Mushroom Stems",     type:"BIO", emoji:"🍄"},
+  { name:"Tomato Scraps",      type:"BIO", emoji:"🍅"},
+  { name:"Zucchini Ends",      type:"BIO", emoji:"🥒"},
+  { name:"Eggshells",          type:"BIO", emoji:"🥚"},
+  { name:"Coffee Grounds",     type:"BIO", emoji:"☕"},
+  { name:"Tea Bags",           type:"BIO", emoji:"🍵"},
+  { name:"Bread Crust",        type:"BIO", emoji:"🍞"},
+  { name:"Stale Crackers",     type:"BIO", emoji:"🫙"},
+  { name:"Cooked Rice",        type:"BIO", emoji:"🍚"},
+  { name:"Cooked Pasta",       type:"BIO", emoji:"🍝"},
+  { name:"Plain Oatmeal",      type:"BIO", emoji:"🥣"},
+  { name:"Fish Bones",         type:"BIO", emoji:"🐟"},
+  { name:"Nut Shells",         type:"BIO", emoji:"🥜"},
+  { name:"Sunflower Shells",   type:"BIO", emoji:"🌻"},
+  { name:"Dried Herbs",        type:"BIO", emoji:"🌿"},
+  { name:"Wilted Flowers",     type:"BIO", emoji:"🌷"},
+  { name:"Dead Leaves",        type:"BIO", emoji:"🍂"},
+  { name:"Grass Clippings",    type:"BIO", emoji:"🌱"},
+  { name:"Paper Napkin",       type:"BIO", emoji:"🧻"},
+  { name:"Used Paper Towel",   type:"BIO", emoji:"🧻"},
+  { name:"Wooden Chopsticks",  type:"BIO", emoji:"🥢"},
+  { name:"Cork Stopper",       type:"BIO", emoji:"🍾"},
+  { name:"Cotton Swab Tips",   type:"BIO", emoji:"🪥"},
+
+  // ── RECYCLE ──────────────────────────────────────────────────────────────
+  { name:"Plastic Bottle",     type:"RECYCLE", emoji:"🧴"},
+  { name:"Plastic Cup",        type:"RECYCLE", emoji:"🥤"},
+  { name:"Plastic Food Tray",  type:"RECYCLE", emoji:"🍱"},
+  { name:"Shampoo Bottle",     type:"RECYCLE", emoji:"🧴"},
+  { name:"Detergent Bottle",   type:"RECYCLE", emoji:"🧴"},
+  { name:"Water Bottle",       type:"RECYCLE", emoji:"💧"},
+  { name:"Juice Bottle",       type:"RECYCLE", emoji:"🧃"},
+  { name:"Aluminum Can",       type:"RECYCLE", emoji:"🥫"},
+  { name:"Steel Tin Can",      type:"RECYCLE", emoji:"🥫"},
+  { name:"Aluminum Foil",      type:"RECYCLE", emoji:"🪙"},
+  { name:"Metal Jar Lid",      type:"RECYCLE", emoji:"🫙"},
+  { name:"Empty Paint Can",    type:"RECYCLE", emoji:"🪣"},
+  { name:"Glass Jar",          type:"RECYCLE", emoji:"🫙"},
+  { name:"Glass Bottle",       type:"RECYCLE", emoji:"🍾"},
+  { name:"Glass Food Jar",     type:"RECYCLE", emoji:"🫙"},
+  { name:"Broken Wine Glass",  type:"NON", emoji:"🍷"},
+  { name:"Newspaper",          type:"RECYCLE", emoji:"📰"},
+  { name:"Cardboard Box",      type:"RECYCLE", emoji:"📦"},
+  { name:"Cereal Box",         type:"RECYCLE", emoji:"🥣"},
+  { name:"Shoe Box",           type:"RECYCLE", emoji:"👟"},
+  { name:"Egg Carton",         type:"RECYCLE", emoji:"🥚"},
+  { name:"Paper Tube (TP)",    type:"RECYCLE", emoji:"🧻"},
+  { name:"Magazine",           type:"RECYCLE", emoji:"📖"},
+  { name:"Office Paper",       type:"RECYCLE", emoji:"📄"},
+  { name:"Milk Carton",        type:"RECYCLE", emoji:"🥛"},
+  { name:"Juice Carton",       type:"RECYCLE", emoji:"🧃"},
+  { name:"Pizza Box (clean)",  type:"RECYCLE", emoji:"📦"},
+  { name:"Battery",            type:"RECYCLE", emoji:"🔋"},
+  { name:"Old Phone",          type:"RECYCLE", emoji:"📱"},
+  { name:"Old Laptop",         type:"RECYCLE", emoji:"💻"},
+  { name:"Printer Cartridge",  type:"RECYCLE", emoji:"🖨️"},
+  { name:"Paper Bag",          type:"RECYCLE", emoji:"🛍️"},
+  { name:"Cardboard Tube",     type:"RECYCLE", emoji:"📜"},
+  { name:"Steel Wool (clean)", type:"RECYCLE", emoji:"🧹"},
+  { name:"Clean Tin Foil",     type:"RECYCLE", emoji:"🪙"},
+
+  // ── NON-BIO ──────────────────────────────────────────────────────────────
+  { name:"Styrofoam Cup",      type:"NON", emoji:"☕"},
+  { name:"Styrofoam Container",type:"NON", emoji:"🥡"},
+  { name:"Plastic Bag",        type:"NON", emoji:"🛍️"},
+  { name:"Cling Wrap",         type:"NON", emoji:"📦"},
+  { name:"Bubble Wrap",        type:"NON", emoji:"📦"},
+  { name:"Plastic Straw",      type:"NON", emoji:"🧋"},
+  { name:"Plastic Cutlery",    type:"NON", emoji:"🍴"},
+  { name:"Coffee Lid",         type:"NON", emoji:"☕"},
+  { name:"Waxed Carton",       type:"NON", emoji:"📄"},
+  { name:"Waxed Paper Cup",    type:"NON", emoji:"☕"},
+  { name:"Chip Bag",           type:"NON", emoji:"🍟"},
+  { name:"Candy Wrapper",      type:"NON", emoji:"🍬"},
+  { name:"Juice Pouch",        type:"NON", emoji:"🧃"},
+  { name:"Broken Ceramic",     type:"NON", emoji:"🏺"},
+  { name:"Broken Pottery",     type:"NON", emoji:"🏛️"},
+  { name:"Broken Mirror",      type:"NON", emoji:"🪞"},
+  { name:"Window Glass (broken)",type:"NON",emoji:"🪟"},
+  { name:"CFL Light Bulb",     type:"NON", emoji:"💡"},
+  { name:"Fluorescent Tube",   type:"NON", emoji:"🔦"},
+  { name:"Disposable Diaper",  type:"NON", emoji:"🧷"},
+  { name:"Sanitary Pad",       type:"NON", emoji:"🩸"},
+  { name:"Pizza Box (greasy)", type:"NON", emoji:"🍕"},
+  { name:"Greasy Food Container",type:"NON",emoji:"🍲"},
+  { name:"Soiled Paper Plate", type:"NON", emoji:"🍽️"},
+  { name:"Rubber Gloves",      type:"NON", emoji:"🧤"},
+  { name:"Rubber Band",        type:"NON", emoji:"🪢"},
+  { name:"Old Rubber Hose",    type:"NON", emoji:"🚿"},
+  { name:"Synthetic Sponge",   type:"NON", emoji:"🧽"},
+  { name:"Tape / Scotch Tape", type:"NON", emoji:"📎"},
+  { name:"Sticky Notes",       type:"NON", emoji:"📝"},
+  { name:"Bandage / Band-Aid", type:"NON", emoji:"🩹"},
+  { name:"Cotton Bud (plastic)",type:"NON",emoji:"🪥"},
+  { name:"Old Toothbrush",     type:"NON", emoji:"🪥"},
+  { name:"Disposable Razor",   type:"NON", emoji:"🪒"},
+  { name:"Old Pen / Biro",     type:"NON", emoji:"🖊️"},
+  { name:"CD / DVD Disc",      type:"NON", emoji:"💿"},
+  { name:"Ceramic Mug (broken)",type:"NON",emoji:"☕"},
+  { name:"Nylon Tights",       type:"NON", emoji:"🧵"},
+  { name:"Expired Medicine",   type:"NON", emoji:"💊"},
+  { name:"Nail Polish Bottle", type:"NON", emoji:"💅"},
+  { name:"Used Cooking Oil",   type:"NON", emoji:"🫙"},
+];
+
+// Shuffle utility — Fisher-Yates
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+const SDG_TIPS = [
+  "🌿 SDG 12: 1/3 of food is wasted globally. Composting bio waste helps!",
+  "♻️ SDG 12: Recycling aluminum saves 95% of the energy vs. making new.",
+  "🌱 SDG 12: Only 9% of all plastic ever made has been recycled.",
+  "🌍 SDG 12: Proper sorting reduces landfill methane by up to 30%.",
+  "💡 SDG 12: Sustainable choices today protect resources for tomorrow.",
+  "🔋 SDG 12: E-waste grows 5% yearly — recycle electronics responsibly.",
+  "🍕 SDG 12: Greasy pizza boxes contaminate cardboard recycling — sort right!",
+  "☕ SDG 12: Coffee grounds enrich compost and reduce landfill gases.",
+];
+
+let score = 0, timeLeft = 30, maxTime = 30;
+let currentItem = {}, gameTick = null, gameActive = false;
+let isPaused = false;
+let soundEnabled = true; // will be updated from settings on startGame
+let totalItems = 0, correctAnswers = 0;
+let itemTypeCount = { bio: 0, recycle: 0, non: 0 };
+let lives = 3, comboCount = 0, maxCombo = 0;
+let powerUpReady = false, powerUpsUsed = 0;
+let tipIndex = 0;
+
+// Shuffled queue — replenishes when exhausted
+let itemQueue = [];
+
+function getNextItem() {
+  if (itemQueue.length === 0) itemQueue = shuffle(ALL_ITEMS);
+  return itemQueue.pop();
+}
+
+function startGame() {
+  isPaused = false; gameActive = true;
+  score = 0; timeLeft = 30; lives = 3; comboCount = 0; maxCombo = 0;
+  totalItems = 0; correctAnswers = 0; powerUpReady = false; powerUpsUsed = 0;
+  itemTypeCount = { bio: 0, recycle: 0, non: 0 };
+  itemQueue = shuffle(ALL_ITEMS);
+  hintsUsed = 0;
+  // Load sound preference from settings
+  soundEnabled = SettingsManager.isSoundEnabled();
+  document.getElementById('soundBtn').textContent = soundEnabled ? '🔊' : '🔇';
+
+  document.getElementById('score').textContent = '0';
+  document.getElementById('timer').textContent = '30';
+  document.getElementById('timerPill').classList.remove('warning');
+  updateLives();
+  updateComboBar();
+  nextItem();
+  gameTick = setInterval(tick, 1000);
+}
+
+function tick() {
+  timeLeft--;
+  document.getElementById('timer').textContent = timeLeft;
+  document.getElementById('timerTrack').style.width = (timeLeft / maxTime * 100) + '%';
+  if (timeLeft <= 8) document.getElementById('timerPill').classList.add('warning');
+
+  if (correctAnswers > 0 && correctAnswers % 7 === 0 && !powerUpReady) {
+    powerUpReady = true;
+    document.getElementById('powerUpBtn').classList.add('available');
+    showFeedback('⚡ Power-Up Ready!', '#FF6F00');
+  }
+
+  if (timeLeft % 8 === 0) {
+    tipIndex = (tipIndex + 1) % SDG_TIPS.length;
+    document.getElementById('sdgTipBar').textContent = SDG_TIPS[tipIndex];
+  }
+
+  if (timeLeft <= 0) endGame();
+}
+
+function togglePause() {
+  if (!gameActive) return;
+  isPaused = !isPaused;
+  if (isPaused) {
+    clearInterval(gameTick); gameTick = null;
+    document.getElementById('pauseOverlay').classList.add('active');
+    document.getElementById('pauseBtn').textContent = '▶ Play';
+  } else {
+    document.getElementById('pauseOverlay').classList.remove('active');
+    document.getElementById('pauseBtn').textContent = '⏸ Pause';
+    gameTick = setInterval(tick, 1000);
+  }
+}
+
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  document.getElementById('soundBtn').textContent = soundEnabled ? '🔊' : '🔇';
+  SettingsManager.toggleSound(soundEnabled);
+}
+
+function check(choice) {
+  if (!gameActive || isPaused) return;
+  const card = document.getElementById('itemCard');
+
+  if (choice === currentItem.type) {
+    const points = 10 + (comboCount >= 3 ? 5 : 0);
+    score += points; correctAnswers++;
+    comboCount = Math.min(comboCount + 1, 5);
+    if (comboCount > maxCombo) maxCombo = comboCount;
+
+    document.getElementById('score').textContent = score;
+    card.classList.add('correct');
+    spawnScoreAnim('+' + points, '#00C853');
+    showFeedback(comboCount >= 3 ? `🔥 ${comboCount}x Combo! +${points}` : `✓ Correct! +${points}`, '#00C853');
+    playSound(comboCount >= 3 ? 'combo' : 'correct');
+
+    if (currentItem.type === 'BIO') itemTypeCount.bio++;
+    else if (currentItem.type === 'RECYCLE') itemTypeCount.recycle++;
+    else itemTypeCount.non++;
+
+    if (comboCount === 5) {
+      timeLeft = Math.min(timeLeft + 3, maxTime);
+      document.getElementById('timer').textContent = timeLeft;
+      showFeedback('🔥 MEGA COMBO! +3s ⏱', '#FF6F00');
+    }
+  } else {
+    lives--; comboCount = 0;
+    card.classList.add('wrong');
+    spawnScoreAnim('✗', '#F44336');
+    showFeedback('✗ Wrong Bin!', '#F44336');
+    playSound('wrong');
+    updateLives();
+    if (lives <= 0) { setTimeout(endGame, 400); return; }
+  }
+
+  updateComboBar();
+  setTimeout(() => { card.classList.remove('correct', 'wrong'); nextItem(); }, 350);
+}
+
+function nextItem() {
+  currentItem = getNextItem();
+  document.getElementById('displayName').textContent = currentItem.name;
+  document.getElementById('displayEmoji').textContent = currentItem.emoji;
+  document.getElementById('categoryHint').textContent = currentItem.hint;
+  document.getElementById('itemCount').textContent = `#${++totalItems}`;
+}
+
+function updateLives() {
+  ['life1','life2','life3'].forEach((id, i) => {
+    document.getElementById(id).classList.toggle('lost', i >= lives);
+  });
+}
+
+function updateComboBar() {
+  for (let i = 1; i <= 5; i++) {
+    const dot = document.getElementById('cd' + i);
+    dot.classList.remove('filled', 'max');
+    if (i <= comboCount) dot.classList.add(comboCount === 5 ? 'max' : 'filled');
+  }
+  const label = document.getElementById('comboLabel');
+  label.textContent = comboCount >= 3 ? `🔥 ${comboCount}x Combo!` : 'Combo';
+  label.classList.toggle('hot', comboCount >= 3);
+}
+
+let hintsUsed = 0;
+
+function showHint() {
+  if (!gameActive || isPaused) return;
+  playSound('hint');
+  hintsUsed++;
+  const hintBtn = document.getElementById('hintBtn');
+  hintBtn.disabled = true;
+  hintBtn.style.opacity = '0.45';
+
+  // Build a vague hint — describes the category type without naming the bin
+  const hints = {
+    BIO: [
+      "🤔 Think: was this once alive? Does it break down naturally in soil?",
+      "🌿 Consider: can nature decompose this on its own over weeks?",
+      "🪱 Ask yourself: would a worm be happy eating this?",
+    ],
+    RECYCLE: [
+      "🤔 Think: is this made of a single clean material like glass, metal, or paper?",
+      "♻️ Consider: could this material be melted or pulped and made into something new?",
+      "🔍 Ask yourself: is there a recycling symbol on it? Is it clean and dry?",
+    ],
+    NON: [
+      "🤔 Think: is it a mix of materials that can't be separated easily?",
+      "🚫 Consider: is it coated, greasy, synthetic, or a safety/hygiene item?",
+      "🗑️ Ask yourself: would contaminating other waste streams be a risk?",
+    ]
+  };
+  const pool = hints[currentItem.type];
+  const msg = pool[hintsUsed % pool.length];
+
+  showFeedback('💡 See hint below ↓', '#7C4DFF');
+
+  // Show in a small tip bar update
+  const tipBar = document.getElementById('sdgTipBar');
+  const prev = tipBar.textContent;
+  tipBar.style.color = '#7C4DFF';
+  tipBar.textContent = msg;
+  setTimeout(() => {
+    tipBar.style.color = '';
+    tipBar.textContent = prev;
+    hintBtn.disabled = false;
+    hintBtn.style.opacity = '1';
+  }, 4000);
+}
+
+function usePowerUp() {
+  if (!powerUpReady || !gameActive) return;
+  powerUpReady = false; powerUpsUsed++;
+  document.getElementById('powerUpBtn').classList.remove('available');
+  showFeedback('⚡ Item Skipped!', '#FF6F00');
+  playSound('powerup');
+  nextItem();
+}
+
+function confirmBack() {
+  if (!gameActive || isPaused) { window.location.href = 'home.html'; return; }
+  if (confirm('Leave the game? Your progress will be lost.')) {
+    clearInterval(gameTick);
+    window.location.href = 'home.html';
+  }
+}
+
+function endGame() {
+  if (!gameActive) return;
+  gameActive = false;
+  clearInterval(gameTick); gameTick = null;
+  document.getElementById('pauseOverlay').classList.remove('active');
+  playSound('end');
+
+  UserManager.addScore(score, correctAnswers, totalItems, itemTypeCount);
+  const profile = UserManager.getProfileSummary();
+  const accuracy = totalItems > 0 ? Math.round((correctAnswers / totalItems) * 100) : 0;
+
+  const gradeEmoji = accuracy >= 90 ? '🏆' : accuracy >= 70 ? '⭐' : accuracy >= 50 ? '🌱' : '💪';
+  const grade = accuracy >= 90 ? 'Eco Master!' : accuracy >= 70 ? 'Great Job!' : accuracy >= 50 ? 'Keep Going!' : 'Practice More!';
+
+  const overlay = document.getElementById('popupOverlay');
+  const card = document.getElementById('overlayCard');
+  card.innerHTML = `
+    <div class="game-over-card">
+      <div class="go-emoji">${gradeEmoji}</div>
+      <h3>Game Over — ${grade}</h3>
+      <div class="go-score">${score}</div>
+      <div class="go-label">points earned</div>
+      <div class="go-stats">
+        <div class="go-stat"><div class="val">${correctAnswers}</div><div class="lbl">Correct</div></div>
+        <div class="go-stat"><div class="val">${accuracy}%</div><div class="lbl">Accuracy</div></div>
+        <div class="go-stat"><div class="val">${maxCombo}x</div><div class="lbl">Best Combo</div></div>
+      </div>
+      <div style="background:var(--green-light);border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:0.84rem;color:var(--green-dark);">
+        🌍 SDG 12: You correctly sorted <strong>${correctAnswers}</strong> items — helping reduce waste and promote Responsible Consumption!
+      </div>
+      <div style="margin-bottom:14px;font-size:0.82rem;color:var(--text-muted);">
+        Level ${profile.level} · ${profile.points.toLocaleString()} total points
+      </div>
+      <div class="go-buttons">
+        <button class="btn-primary" onclick="restartGame()">Play Again 🎮</button>
+        <button class="go-secondary" onclick="window.location.href='home.html'">Back to Home</button>
+      </div>
+    </div>
+  `;
+  overlay.classList.add('active');
+}
+
+function restartGame() {
+  document.getElementById('popupOverlay').classList.remove('active');
+  startGame();
+}
+
+function spawnScoreAnim(text, color) {
+  const el = document.createElement('div');
+  el.className = 'score-anim';
+  el.textContent = text;
+  el.style.color = color;
+  el.style.left = (Math.random() * 40 + 30) + '%';
+  el.style.top = '40%';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 900);
+}
+
+function showFeedback(msg, color) {
+  const fb = document.getElementById('fb');
+  fb.textContent = msg;
+  fb.style.background = color;
+  fb.classList.add('show');
+  setTimeout(() => fb.classList.remove('show'), 1200);
+}
+
+function playSound(type) {
+  if (!soundEnabled) return;
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playNote(freq, startTime, duration, gainVal, waveType, freqEnd) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = waveType || 'sine';
+      osc.frequency.setValueAtTime(freq, startTime);
+      if (freqEnd) osc.frequency.exponentialRampToValueAtTime(freqEnd, startTime + duration);
+      gain.gain.setValueAtTime(gainVal, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+      osc.start(startTime); osc.stop(startTime + duration);
+    }
+
+    const t = ctx.currentTime;
+
+    if (type === 'correct') {
+      // Happy ascending chime ✨
+      playNote(523, t,       0.1,  0.12, 'triangle');
+      playNote(659, t+0.08,  0.1,  0.12, 'triangle');
+      playNote(784, t+0.16,  0.18, 0.12, 'triangle');
+      playNote(1047,t+0.24,  0.22, 0.10, 'sine');
+    } else if (type === 'combo') {
+      // Sizzling combo fanfare 🔥
+      playNote(392, t,       0.08, 0.10, 'square');
+      playNote(523, t+0.07,  0.08, 0.10, 'square');
+      playNote(659, t+0.14,  0.08, 0.10, 'square');
+      playNote(784, t+0.21,  0.08, 0.10, 'square');
+      playNote(1047,t+0.28,  0.25, 0.12, 'triangle');
+    } else if (type === 'wrong') {
+      // Buzzy descending bwoop ❌
+      playNote(300, t,       0.05, 0.10, 'sawtooth', 200);
+      playNote(200, t+0.07,  0.05, 0.10, 'sawtooth', 130);
+      playNote(130, t+0.14,  0.15, 0.09, 'sawtooth', 80);
+    } else if (type === 'end') {
+      // Game-over melody 🎺
+      playNote(523, t,       0.15, 0.10, 'triangle');
+      playNote(494, t+0.18,  0.15, 0.10, 'triangle');
+      playNote(440, t+0.36,  0.15, 0.10, 'triangle');
+      playNote(392, t+0.54,  0.40, 0.12, 'sine');
+    } else if (type === 'powerup') {
+      // Power-up sparkle ⚡
+      playNote(784, t,       0.07, 0.10, 'sine');
+      playNote(988, t+0.06,  0.07, 0.10, 'sine');
+      playNote(1175,t+0.12,  0.07, 0.10, 'sine');
+      playNote(1568,t+0.18,  0.20, 0.12, 'triangle');
+    } else if (type === 'hint') {
+      // Soft thinking ping 💭
+      playNote(660, t,       0.12, 0.07, 'sine');
+      playNote(880, t+0.15,  0.18, 0.06, 'sine');
+    }
+
+    setTimeout(() => { if (ctx.state !== 'closed') ctx.close(); }, 1200);
+  } catch(e) {}
+}
+</script>
+</body>
+</html>

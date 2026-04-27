@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hedgehog Eco Dash — Learn</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-shell">
+
+
+  <div id="learnScreen" class="screen active" style="padding-bottom:80px;">
+    <div class="inner-header">
+      <button class="icon-btn" onclick="window.history.back()">←</button>
+      <h2>Learn</h2>
+      <button class="icon-btn" onclick="window.location.href='settings.html'">⚙️</button>
+    </div>
+
+    <div style="padding: 16px; display: flex; flex-direction: column; gap: 16px;">
+
+      <!-- SDG 12 Highlight -->
+      <div class="sdg-highlight">
+        <div class="sdg-number">🌐 UN Sustainable Development Goal 12</div>
+        <div class="sdg-hl-title">Responsible Consumption & Production</div>
+        <div class="sdg-hl-text">By 2030, the UN aims to halve global food waste, achieve sustainable management of natural resources, and reduce waste through prevention, reduction, recycling, and reuse. Every item you sort correctly moves us closer to this goal.</div>
+      </div>
+
+      <!-- Modules -->
+      <div class="section-label">Educational Modules</div>
+      <div class="module-grid">
+        <div class="module-card">
+          <div class="module-thumb" style="background:linear-gradient(135deg,#E3F2FD,#BBDEFB);">♻️</div>
+          <div class="module-body">
+            <div class="module-title">Recycling Basics</div>
+            <div class="module-sub">Learn the fundamentals of recycling and common recyclable materials.</div>
+          </div>
+          <button class="explore-btn" onclick="openModule('recycling')">Explore →</button>
+        </div>
+
+        <div class="module-card">
+          <div class="module-thumb" style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9);">🌱</div>
+          <div class="module-body">
+            <div class="module-title">Compost Care</div>
+            <div class="module-sub">Master how to compost food scraps, yard waste, and paper towels.</div>
+          </div>
+          <button class="explore-btn" onclick="openModule('compost')">Explore →</button>
+        </div>
+
+        <div class="module-card">
+          <div class="module-thumb" style="background:linear-gradient(135deg,#FFF3E0,#FFE0B2);">🗑️</div>
+          <div class="module-body">
+            <div class="module-title">Non-Bio Waste</div>
+            <div class="module-sub">Understand which materials cannot be composted or recycled.</div>
+          </div>
+          <button class="explore-btn" onclick="openModule('nonbio')">Explore →</button>
+        </div>
+
+        <div class="module-card">
+          <div class="module-thumb" style="background:linear-gradient(135deg,#FCE4EC,#F8BBD0);">🌍</div>
+          <div class="module-body">
+            <div class="module-title">SDG 12 Impact</div>
+            <div class="module-sub">How your daily waste choices connect to global sustainability goals.</div>
+          </div>
+          <button class="explore-btn" onclick="openModule('sdg12')">Explore →</button>
+        </div>
+      </div>
+
+      <!-- Quick Tips -->
+      <div class="section-label">Quick Eco Tips</div>
+      <div class="tip-list">
+        <div class="tip-item">
+          <div class="tip-emoji">✅</div>
+          <div class="tip-content">
+            <div class="tip-title">Rinse Before Recycling</div>
+            <div class="tip-text">Always rinse containers to remove food residue before placing them in the recycle bin. Contaminated recyclables can ruin an entire batch.</div>
+          </div>
+        </div>
+        <div class="tip-item">
+          <div class="tip-emoji">🌱</div>
+          <div class="tip-content">
+            <div class="tip-title">Compost Food Scraps</div>
+            <div class="tip-text">Fruit peels, vegetable scraps, coffee grounds, and eggshells all belong in the bio bin — they create nutrient-rich compost for plants.</div>
+          </div>
+        </div>
+        <div class="tip-item">
+          <div class="tip-emoji">🚫</div>
+          <div class="tip-content">
+            <div class="tip-title">Pizza Boxes ≠ Recyclable</div>
+            <div class="tip-text">Greasy pizza boxes contaminate cardboard recycling. If the top is clean, recycle it; the greasy bottom goes in the non-bio bin.</div>
+          </div>
+        </div>
+        <div class="tip-item">
+          <div class="tip-emoji">🔋</div>
+          <div class="tip-content">
+            <div class="tip-title">Batteries Need Special Care</div>
+            <div class="tip-text">Never throw batteries in the trash! They contain toxic chemicals. Most hardware stores have special battery recycling drop-off points.</div>
+          </div>
+        </div>
+        <div class="tip-item">
+          <div class="tip-emoji">♻️</div>
+          <div class="tip-content">
+            <div class="tip-title">Check the Recycling Symbol</div>
+            <div class="tip-text">Not all plastics are equal. Look for the number inside the recycling triangle — #1 and #2 are most widely accepted at recycling centers.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SDG 12 Fact -->
+      <div class="sdg-fact-card">
+        <div class="fact-icon">📊</div>
+        <div>
+          <div class="fact-label">SDG 12 Global Target</div>
+          <div class="fact-text">By 2030, achieve sustainable management and efficient use of natural resources (Target 12.2). Proper waste sorting is one of the most direct actions you can take today.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-item" onclick="window.location.href='home.html'">
+      <div class="nav-icon-wrap">🏠</div>
+      <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-item" onclick="window.location.href='gameplay.html'">
+      <div class="nav-icon-wrap">🎮</div>
+      <span class="nav-label">Play</span>
+    </button>
+    <button class="nav-item active" onclick="window.location.href='learn.html'">
+      <div class="nav-icon-wrap">📚</div>
+      <span class="nav-label">Learn</span>
+    </button>
+    <button class="nav-item" onclick="window.location.href='profile.html'">
+      <div class="nav-icon-wrap">👤</div>
+      <span class="nav-label">Profile</span>
+    </button>
+  </nav>
+
+  <div id="popupOverlay" class="overlay" onclick="closePopup(event)">
+    <div class="overlay-card">
+      <h3></h3>
+      <p></p>
+      <button class="overlay-close" onclick="closePopup(event)">Close</button>
+    </div>
+  </div>
+
+  <div id="fb" class="feedback-toast"></div>
+</div>
+
+<script src="app.js"></script>
+<script src="settings.js"></script>
+<script src="user.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  if (!UserManager.isLoggedIn()) {
+    window.location.href = 'index.html';
+  }
+});
+
+const modules = {
+  recycling: {
+    title: '♻️ Recycling Basics',
+    content: `<strong>SDG 12 Connection:</strong> Recycling supports Responsible Consumption by giving materials a second life and reducing resource extraction.<br><br>
+<strong>✅ Common Recyclables:</strong><br>
+• Paper & cardboard (clean/dry)<br>
+• Plastics #1 & #2 (bottles, containers)<br>
+• Glass jars & bottles<br>
+• Metals: cans, foil, tins<br>
+• Milk cartons & tetra paks<br><br>
+<strong>🚫 Not Recyclable:</strong><br>
+• Greasy or food-soiled items<br>
+• Plastic bags & film<br>
+• Styrofoam<br>
+• Mixed-material packaging<br><br>
+<strong>💡 Pro Tips:</strong><br>
+• Rinse before recycling<br>
+• Flatten cardboard boxes<br>
+• Remove caps from bottles<br>
+• Check local guidelines — they vary!<br><br>
+Recycling one ton of paper saves 17 trees, 7,000 gallons of water, and significantly reduces greenhouse gas emissions.`
+  },
+  compost: {
+    title: '🌱 Compost Care',
+    content: `<strong>SDG 12 Connection:</strong> Composting turns food waste into soil gold — directly reducing landfill methane and creating a circular resource loop.<br><br>
+<strong>✅ What to Compost (Bio Bin):</strong><br>
+• Fruit & vegetable scraps<br>
+• Coffee grounds & tea bags<br>
+• Eggshells & nutshells<br>
+• Bread, rice, pasta (plain)<br>
+• Yard waste, leaves, grass<br>
+• Paper towels & napkins<br><br>
+<strong>🚫 Do NOT Compost:</strong><br>
+• Meat, fish & dairy<br>
+• Oily or greasy foods<br>
+• Pet waste<br>
+• Plastics or synthetics<br>
+• Diseased plants<br><br>
+<strong>🌍 How to Start:</strong><br>
+1. Get a small countertop bin<br>
+2. Layer green (wet) + brown (dry) materials<br>
+3. Keep it moist — not soggy<br>
+4. Turn weekly for aeration<br>
+5. Ready compost in 2–3 months!<br><br>
+Composting reduces household waste by up to 30% and eliminates the need for chemical fertilizers.`
+  },
+  nonbio: {
+    title: '🗑️ Non-Bio (Residual) Waste',
+    content: `<strong>SDG 12 Connection:</strong> Understanding what goes in the non-bio bin reduces contamination of recyclable and compostable streams.<br><br>
+<strong>What goes in Non-Bio:</strong><br>
+• Styrofoam & polystyrene<br>
+• Plastic bags & film<br>
+• Waxed or coated paper<br>
+• Ceramics & broken pottery<br>
+• Mirrors & window glass<br>
+• CFL & fluorescent bulbs<br>
+• Diapers & sanitary products<br>
+• Greasy food packaging<br>
+• Mixed-material composites<br>
+• Rubber & synthetic materials<br><br>
+<strong>⚠️ Special Disposal:</strong><br>
+• Batteries → special recycling point<br>
+• Electronics → e-waste centers<br>
+• Medicines → pharmacy drop-off<br>
+• Chemicals → hazardous waste<br><br>
+<strong>💡 Reduce First:</strong><br>
+The best non-bio waste is waste you never created. Choose reusables and products with less packaging whenever possible — that's SDG 12 in action!`
+  },
+  sdg12: {
+    title: '🌍 SDG 12 — Responsible Consumption',
+    content: `<strong>What is SDG 12?</strong><br>
+The United Nations Sustainable Development Goal 12 calls on all countries and citizens to ensure sustainable consumption and production patterns.<br><br>
+<strong>Key Targets by 2030:</strong><br>
+• Halve global food waste (Target 12.3)<br>
+• Achieve sustainable management of natural resources (12.2)<br>
+• Reduce waste through prevention, reduction, recycling & reuse (12.5)<br>
+• Adopt sustainable practices in business & government (12.6)<br><br>
+<strong>Why It Matters:</strong><br>
+• 1.3 billion tonnes of food are wasted annually<br>
+• Only 9% of all plastic ever made has been recycled<br>
+• Sustainable production could reduce global CO₂ by 70%<br>
+• Consumers produce 40–50% of global waste<br><br>
+<strong>How Eco Dash Connects:</strong><br>
+Every item you sort correctly in the game represents a real-world choice. By learning to distinguish bio, recyclable, and non-bio waste, you're building habits that directly support SDG 12 targets.<br><br>
+<em>Small actions, multiplied by millions of people, create massive impact. 🌱</em>`
+  }
+};
+
+function openModule(key) {
+  const m = modules[key];
+  showPopup(m.title, m.content);
+}
+</script>
+</body>
+</html>
