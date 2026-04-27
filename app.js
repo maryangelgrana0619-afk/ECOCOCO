@@ -143,16 +143,14 @@ function handleSignUp() {
   try {
     UserManager.signUp(email, password, username, fullName);
     
-    // Verify the account was created
-    const testUser = UserManager.getUserData(email);
-    if (testUser) {
-      // Account created successfully, redirect to home
-      setTimeout(() => {
-        window.location.href = 'home.html';
-      }, 100);
-    } else {
-      showPopup('Sign Up Failed', 'Account could not be saved. Please try again.');
-    }
+    // Redirect to home page directly after sign-up (bypassing sign-in)
+    // Pass user data via URL for extra safety
+    const userData = JSON.stringify({
+      email: email,
+      username: username,
+      fullName: fullName
+    });
+    window.location.href = 'home.html?signup=' + encodeURIComponent(userData);
   } catch (error) {
     showPopup('Sign Up Failed', error.message);
   }

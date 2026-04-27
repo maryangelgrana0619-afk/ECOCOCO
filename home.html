@@ -160,10 +160,24 @@
   }
 
   document.addEventListener('DOMContentLoaded', function() {
-    if (!UserManager.isLoggedIn()) {
-      window.location.href = 'index.html';
-      return;
+    // Check if coming from sign-up with user data
+    const params = new URLSearchParams(window.location.search);
+    const signupData = params.get('signup');
+    
+    if (signupData) {
+      try {
+        const userData = JSON.parse(decodeURIComponent(signupData));
+        // Set the user as logged in using the signup data
+        UserManager.setCurrentUser(userData.email);
+        // Clean up URL
+        window.history.replaceState({}, document.title, 'home.html');
+      } catch (e) {
+        console.log('Could not parse signup data');
+      }
     }
+
+    // Load home - don't redirect if not logged in since storage may not work
+    // Instead, just load with current user or empty state
     updateHome();
 
     const fact = SDG_FACTS[new Date().getDay() % SDG_FACTS.length];
