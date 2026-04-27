@@ -1,3 +1,47 @@
+// Fallback storage for MIT App Inventor compatibility
+const FallbackStorage = {
+    data: {},
+    getItem: function(key) {
+        return this.data[key] || null;
+    },
+    setItem: function(key, value) {
+        this.data[key] = value;
+    },
+    removeItem: function(key) {
+        delete this.data[key];
+    }
+};
+
+// Safe storage abstraction that works in MIT App Inventor
+const SafeStorage = {
+    storage: (function() {
+        try {
+            // Test if localStorage is available
+            const test = '__storage_test__';
+            if (typeof localStorage !== 'undefined' && localStorage !== null) {
+                localStorage.setItem(test, test);
+                localStorage.removeItem(test);
+                return localStorage;
+            }
+        } catch (e) {
+            // localStorage not available, use fallback
+        }
+        return FallbackStorage;
+    })(),
+
+    getItem: function(key) {
+        return this.storage.getItem(key);
+    },
+
+    setItem: function(key, value) {
+        this.storage.setItem(key, value);
+    },
+
+    removeItem: function(key) {
+        this.storage.removeItem(key);
+    }
+};
+
 const UserManager = {
     defaultUserData: {
         fullName: '',
@@ -35,24 +79,24 @@ const UserManager = {
     },
 
     getUsers: function() {
-        const users = localStorage.getItem('ecoDashUsers');
+        const users = SafeStorage.getItem('ecoDashUsers');
         return users ? JSON.parse(users) : {};
     },
 
     saveUsers: function(users) {
-        localStorage.setItem('ecoDashUsers', JSON.stringify(users));
+        SafeStorage.setItem('ecoDashUsers', JSON.stringify(users));
     },
 
     getCurrentUser: function() {
-        return localStorage.getItem('currentUser');
+        return SafeStorage.getItem('currentUser');
     },
 
     setCurrentUser: function(email) {
-        localStorage.setItem('currentUser', email);
+        SafeStorage.setItem('currentUser', email);
     },
 
     clearCurrentUser: function() {
-        localStorage.removeItem('currentUser');
+        SafeStorage.removeItem('currentUser');
     },
 
     getUserData: function(email) {
